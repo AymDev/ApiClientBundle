@@ -1,0 +1,45 @@
+{
+    "name": "aymdev/api-client-bundle",
+    "description": "Symfony bundle extending the HttpClient component with extra features (authentication, caching, DTOs, ...)",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "AymDev",
+            "email": "aymericmayeux@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "AymDev\\ApiClientBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\AymDev\\ApiClientBundle\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^8.3",
+        "symfony/http-kernel": "^5.4|^6.4|^7.3",
+        "symfony/dependency-injection": "^5.4|^6.4|^7.3",
+        "symfony/http-client": "^5.4|^6.4|^7.3"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.13",
+        "phpcompatibility/php-compatibility": "^9.3",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "symfony/phpunit-bridge": "^5.4|^6.4|^7.3"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        }
+    }
+}
