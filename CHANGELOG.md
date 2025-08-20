@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2025-00-00
 ### Added
+ - request logging
 
 [Unreleased]: https://github.com/AymDev/ApiClientBundle/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/AymDev/ApiClientBundle/releases/tag/v1.0.0

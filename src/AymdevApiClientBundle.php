@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AymDev\ApiClientBundle;
+
+use AymDev\ApiClientBundle\DependencyInjection\Compiler\ApiClientPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
+
+/**
+ * @internal
+ */
+class AymdevApiClientBundle extends Bundle
+{
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new ApiClientPass());
+    }
+}
