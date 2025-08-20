@@ -97,10 +97,43 @@ aymdev_api_client:
 
 Then it will log any call with a defined *request ID* with the following properties:
 
-| Key               | Description                          |
-|-------------------|--------------------------------------|
-| `method`          | HTTP method                          |
-| `url`             | URL endpoint                         |
-| `response_status` | HTTP status code of the response     |
-| `time`            | duration of the request (in seconds) |
-| `error`           | error message if anything occured    |
+| Key               | Description                                     |
+|-------------------|-------------------------------------------------|
+| `method`          | HTTP method                                     |
+| `url`             | URL endpoint                                    |
+| `response_status` | HTTP status code of the response                |
+| `time`            | duration of the request (in seconds)            |
+| `cache`           | if the response has been fetched from the cache |
+| `error`           | error message if anything occured               |
+
+# Cache
+
+You can save responses in cache by providing a **PSR cache pool** service:
+```yaml
+aymdev_api_client:
+    cache: my.psr.cache.service
+```
+
+Then you can enable caching per request using the following constants:
+
+ - `CACHE_DURATION`: number of seconds to keep in cache
+ - `CACHE_EXPIRATION`: expiration time of the response (overrides `CACHE_DURATION`)
+ - `CACHE_ERROR_DURATION`: same as `CACHE_DURATION` but will be applied if the response status is >=300
+
+The cache key will be determined based on the *request ID*:
+```php
+use AymDev\ApiClientBundle\Client\ApiClientInterface;
+
+$apiClient->request('GET', 'https://example.com', [
+    'user_data' => [
+        ApiClientInterface::REQUEST_ID => 'my.request.id',
+        
+        // You actually need to define only one of those options
+        ApiClientInterface::CACHE_DURATION => 86400,
+        ApiClientInterface::CACHE_EXPIRATION => new \DateTime('Tomorrow 6 am'),
+        
+        // Will override previous options if an error occurs
+        ApiClientInterface::CACHE_ERROR_DURATION => 3600,
+    ]
+]);
+```

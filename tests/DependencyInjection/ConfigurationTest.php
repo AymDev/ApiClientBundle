@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\AymDevApiClientBundle\DependencyInjection;
+namespace Tests\AymDev\ApiClientBundle\DependencyInjection;
 
 use AymDev\ApiClientBundle\DependencyInjection\Configuration;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -25,6 +25,7 @@ class ConfigurationTest extends TestCase
         $processedConfiguration = $processor->processConfiguration($configuration, $parsedYamlConfig);
 
         self::assertArrayHasKey('logger', $processedConfiguration);
+        self::assertArrayHasKey('cache', $processedConfiguration);
     }
 
     /**

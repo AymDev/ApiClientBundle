@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\AymDevApiClientBundle\DependencyInjection\Compiler;
+namespace Tests\AymDev\ApiClientBundle\DependencyInjection\Compiler;
 
 use AymDev\ApiClientBundle\AymdevApiClientBundle;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -29,6 +31,33 @@ class ApiClientPassTest extends TestCase
         $container = $kernel->getContainer();
 
         self::assertTrue($container->has(ApiClientInterface::class));
+    }
+
+    public function testLogServicesDefinition(): void
+    {
+        $kernel = new AymDevApiClientTestKernel([
+            'logger' => 'logger',
+        ]);
+        $kernel->boot();
+
+        /** @var ContainerInterface $container */
+        $container = $kernel->getContainer()->get('test.service_container');
+
+        self::assertTrue($container->has('aymdev_api_client.log.passthru'));
+        self::assertTrue($container->has('aymdev_api_client.log.request_logger'));
+    }
+
+    public function testCacheServicesDefinition(): void
+    {
+        $kernel = new AymDevApiClientTestKernel([
+            'cache' => 'cache.app',
+        ]);
+        $kernel->boot();
+
+        /** @var ContainerInterface $container */
+        $container = $kernel->getContainer()->get('test.service_container');
+
+        self::assertTrue($container->has('aymdev_api_client.cache.cache_manager'));
     }
 }
 

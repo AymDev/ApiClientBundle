@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\AymDevApiClientBundle\Log;
+namespace Tests\AymDev\ApiClientBundle\Log;
 
+use AymDev\ApiClientBundle\Cache\CachedResponse;
 use AymDev\ApiClientBundle\Log\RequestLogger;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -35,6 +36,7 @@ class RequestLoggerTest extends TestCase
                     'url' => $url,
                     'response_status' => $status,
                     'time' => $duration,
+                    'cache' => false,
                     'error' => $error,
                 ]
             );
@@ -48,19 +50,29 @@ class RequestLoggerTest extends TestCase
         ]);
         $infos = [];
         $context = new AsyncContext($passthru, new MockHttpClient(), $response, $infos, null, 0);
-        $request = [
-            'method' => $method,
-            'url' => $url,
-            'options' => [],
-        ];
 
         $requestLogger = new RequestLogger($logger);
-        $requestLogger->logRequest($duration, $context, $request);
+        $requestLogger->logRequest($duration, $context, []);
     }
 
     public static function provideResponses(): \Generator
     {
         yield [204, 'info'];
         yield [404, 'error'];
+    }
+
+    public function testLogCachedCall(): void
+    {
+        $logger = self::createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('info')
+            ->with(
+                self::isString(),
+                self::callback(fn(array $context) => $context['cache'] === true),
+            );
+
+        $response = self::createMock(CachedResponse::class);
+        $requestLogger = new RequestLogger($logger);
+        $requestLogger->logRequest(1, $response, []);
     }
 }

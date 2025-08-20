@@ -1,0 +1,2 @@
+aymdev_api_client:
+    cache: 'Psr\Cache\CacheItemPoolInterface'

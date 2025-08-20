@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\AymDevApiClientBundle\Log;
+namespace Tests\AymDev\ApiClientBundle\Log;
 
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use AymDev\ApiClientBundle\Client\OptionsParser;
