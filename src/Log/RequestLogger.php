@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AymDev\ApiClientBundle\Log;
 
+use AymDev\ApiClientBundle\Cache\CachedResponse;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\Response\AsyncContext;
@@ -11,12 +12,6 @@ use Symfony\Component\HttpClient\Response\AsyncContext;
 /**
  * @internal
  * @phpstan-import-type ApiClientOptions from ApiClientInterface
- *
- * @phpstan-type RequestOptions array{
- *      method: string,
- *      url: string,
- *      options: ApiClientOptions
- *  }
  */
 class RequestLogger
 {
@@ -26,28 +21,32 @@ class RequestLogger
     }
 
     /**
-     * @param RequestOptions $request
+     * @param ApiClientOptions $options
      */
     public function logRequest(
         float $duration,
-        AsyncContext $context,
-        array $request,
+        CachedResponse|AsyncContext $responseOrContext,
+        array $options,
     ): void {
-        $message = 'API call {response_status} {method} {url}';
+        $message = sprintf(
+            '%sAPI call {response_status} {method} {url}',
+            $responseOrContext instanceof CachedResponse ? 'Cached ' : '',
+        );
 
-        $status = $context->getInfo('http_code');
-        $context = [
-            'method' => $context->getInfo('http_method'),
-            'url' => $context->getInfo('url'),
+        $status = $responseOrContext->getInfo('http_code');
+        $responseOrContext = [
+            'method' => $responseOrContext->getInfo('http_method'),
+            'url' => $responseOrContext->getInfo('url'),
             'response_status' => $status,
             'time' => $duration,
-            'error' => $context->getInfo('error'),
+            'cache' => $responseOrContext instanceof CachedResponse,
+            'error' => $responseOrContext->getInfo('error'),
         ];
 
         if (is_scalar($status) && intval($status) >= 400) {
-            $this->logger->error($message, $context);
+            $this->logger->error($message, $responseOrContext);
         } else {
-            $this->logger->info($message, $context);
+            $this->logger->info($message, $responseOrContext);
         }
     }
 }

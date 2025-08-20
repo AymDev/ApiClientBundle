@@ -16,12 +16,40 @@ class OptionsParser
 {
     /**
      * Find the request identifier from the "user_data" options
-     * @param ApiClientOptions $options
+     * @param null|ResponseInterface|ApiClientOptions $responseOrOptions
      */
-    public function getRequestId(?ResponseInterface $response = null, array $options = []): ?string
+    public function getRequestId(null|ResponseInterface|array $responseOrOptions): ?string
+    {
+        $userData = $this->getUserData($responseOrOptions);
+        return $userData[ApiClientInterface::REQUEST_ID] ?? null;
+    }
+
+    /**
+     * Detect caching options from the "user_data" options
+     * @param null|ResponseInterface|ApiClientOptions $responseOrOptions
+     */
+    public function hasCacheOptions(null|ResponseInterface|array $responseOrOptions): bool
+    {
+        if (null === $this->getRequestId($responseOrOptions)) {
+            return false;
+        }
+
+        $userData = $this->getUserData($responseOrOptions);
+        return is_int($userData[ApiClientInterface::CACHE_DURATION] ?? null)
+            || ($userData[ApiClientInterface::CACHE_EXPIRATION] ?? null) instanceof \DateTime
+            || is_int($userData[ApiClientInterface::CACHE_ERROR_DURATION] ?? null);
+    }
+
+    /**
+     * @param null|ResponseInterface|ApiClientOptions $responseOrOptions
+     * @return UserDataOptions
+     */
+    private function getUserData(null|ResponseInterface|array $responseOrOptions): array
     {
         /** @var UserDataOptions $userData */
-        $userData = $response?->getInfo('user_data') ?? $options['user_data'] ?? [];
-        return $userData[ApiClientInterface::REQUEST_ID] ?? null;
+        $userData = $responseOrOptions instanceof ResponseInterface
+            ? $responseOrOptions->getInfo('user_data')
+            : ($responseOrOptions['user_data'] ?? []);
+        return $userData;
     }
 }

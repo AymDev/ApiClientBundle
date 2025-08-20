@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AymDev\ApiClientBundle\Client;
 
+use AymDev\ApiClientBundle\Cache\CacheManager;
 use AymDev\ApiClientBundle\Log\Passthru;
 use Symfony\Component\HttpClient\AsyncDecoratorTrait;
 use Symfony\Component\HttpClient\Response\AsyncResponse;
@@ -23,6 +24,7 @@ class ApiClient implements ApiClientInterface
     public function __construct(
         private readonly OptionsParser $optionsParser,
         private readonly ?Passthru $passthru,
+        private readonly ?CacheManager $cacheManager,
         HttpClientInterface $httpClient,
     ) {
         $this->httpClient = new TraceableHttpClient($httpClient);
@@ -34,9 +36,15 @@ class ApiClient implements ApiClientInterface
      */
     public function request(string $method, string $url, array $options = []): ResponseInterface
     {
+        // Response already in cache
+        $cachedResponse = $this->cacheManager?->getFromCache($options);
+        if (null !== $cachedResponse) {
+            return $cachedResponse;
+        }
+
         // Log request when response is complete
         $passthru = null;
-        $requestId = $this->optionsParser->getRequestId(options: $options);
+        $requestId = $this->optionsParser->getRequestId($options);
 
         if (null !== $this->passthru && null !== $requestId) {
             $this->passthru->registerRequest($requestId);
@@ -44,6 +52,7 @@ class ApiClient implements ApiClientInterface
         }
 
         $options['buffer'] = true;
-        return new AsyncResponse($this->httpClient, $method, $url, $options, $passthru);
+        $response = new AsyncResponse($this->httpClient, $method, $url, $options, $passthru);
+        return $this->cacheManager?->getCacheableResponse($response) ?? $response;
     }
 }

@@ -26,6 +26,9 @@ final class AymdevApiClientExtension extends Extension
         $logger = is_string($config['logger']) ? $config['logger'] : null;
         $container->setParameter(self::CONTAINER_PREFIX . '.logger', $logger);
 
+        $cache = is_string($config['cache']) ? $config['cache'] : null;
+        $container->setParameter(self::CONTAINER_PREFIX . '.cache', $cache);
+
         // Default helper services
         $container->setDefinition(self::ID_CLIENT_OPTIONS_PARSER, new Definition(OptionsParser::class));
     }

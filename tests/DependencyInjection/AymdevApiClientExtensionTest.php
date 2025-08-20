@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\AymDevApiClientBundle\DependencyInjection;
+namespace Tests\AymDev\ApiClientBundle\DependencyInjection;
 
 use AymDev\ApiClientBundle\DependencyInjection\AymdevApiClientExtension;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +19,7 @@ class AymdevApiClientExtensionTest extends TestCase
 
         // Container parameters
         self::assertTrue($container->hasParameter('aymdev_api_client.logger'));
+        self::assertTrue($container->hasParameter('aymdev_api_client.cache'));
 
         // Helper services
         self::assertTrue($container->hasDefinition('aymdev_api_client.client.options_parser'));

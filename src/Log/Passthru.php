@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace AymDev\ApiClientBundle\Log;
 
+use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use AymDev\ApiClientBundle\Client\OptionsParser;
 use Symfony\Component\HttpClient\Response\AsyncContext;
 use Symfony\Contracts\HttpClient\ChunkInterface;
 
 /**
  * @internal
- * @phpstan-import-type RequestOptions from RequestLogger
+ * @phpstan-import-type ApiClientOptions from ApiClientInterface
+ *
+ * @phpstan-type RequestOptions array{
+ *       method: string,
+ *       url: string,
+ *       options: ApiClientOptions
+ *   }
  *
  * This services manages async requests in order to log them
  */
@@ -63,7 +70,7 @@ class Passthru
             // Find request of current response in case of multiplexing
             $tracedRequests = array_filter(
                 call_user_func($this->getTracedRequests),
-                fn (array $r) => $requestId === $this->optionsParser->getRequestId(options: $r['options'])
+                fn (array $r) => $requestId === $this->optionsParser->getRequestId($r['options'])
             );
             $request = array_values($tracedRequests)[0] ?? null;
 
@@ -74,7 +81,7 @@ class Passthru
 
             // Unregister request
             unset($this->loggableRequests[$requestId]);
-            $this->requestLogger->logRequest($duration, $context, $request);
+            $this->requestLogger->logRequest($duration, $context, $request['options']);
         }
 
         yield $chunk;

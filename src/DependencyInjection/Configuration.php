@@ -25,6 +25,7 @@ class Configuration implements ConfigurationInterface
         $startingPoint = $rootNode->children();
 
         $startingPoint->scalarNode('logger')->defaultNull()->end();
+        $startingPoint->scalarNode('cache')->defaultNull()->end();
 
         return $treeBuilder;
     }

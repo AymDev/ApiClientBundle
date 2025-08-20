@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AymDev\ApiClientBundle\DependencyInjection\Compiler;
 
+use AymDev\ApiClientBundle\Cache\CacheManager;
 use AymDev\ApiClientBundle\Client\ApiClient;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use AymDev\ApiClientBundle\DependencyInjection\AymdevApiClientExtension;
@@ -20,10 +21,12 @@ class ApiClientPass implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         $passthru = $this->registerPassthru($container);
+        $cacheManager = $this->registerCacheManager($container);
 
         $clientDefinition = new Definition(ApiClient::class, [
             '$optionsParser' => new Reference(AymdevApiClientExtension::ID_CLIENT_OPTIONS_PARSER),
             '$passthru' => $passthru,
+            '$cacheManager' => $cacheManager,
             '$httpClient' => new Reference(HttpClientInterface::class),
         ]);
 
@@ -58,5 +61,23 @@ class ApiClientPass implements CompilerPassInterface
         );
 
         return new Reference($passthruId);
+    }
+
+    private function registerCacheManager(ContainerBuilder $container): ?Reference
+    {
+        $cachePool = $container->getParameter(AymdevApiClientExtension::CONTAINER_PREFIX . '.cache');
+        if (!is_string($cachePool)) {
+            return null;
+        }
+
+        $cachePool = new Reference($cachePool);
+
+        $cacheManagerId = AymdevApiClientExtension::CONTAINER_PREFIX . '.cache.cache_manager';
+        $container->setDefinition($cacheManagerId, new Definition(CacheManager::class, [
+            '$optionsParser' => new Reference(AymdevApiClientExtension::ID_CLIENT_OPTIONS_PARSER),
+            '$cache' => $cachePool,
+        ]));
+
+        return new Reference($cacheManagerId);
     }
 }
