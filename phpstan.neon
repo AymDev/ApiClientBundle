@@ -5,3 +5,10 @@ parameters:
         - tests
     bootstrapFiles:
         - vendor/bin/.phpunit/phpunit-12.3-0/vendor/autoload.php
+    ignoreErrors:
+        # @see https://github.com/phpstan/phpstan/issues/13410
+        -
+            identifiers:
+                - offsetAccess.nonOffsetAccessible
+                - booleanNot.exprNotBoolean
+            path: src/Log/RequestLogger.php
