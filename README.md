@@ -101,10 +101,20 @@ Then it will log any call with a defined *request ID* with the following propert
 |-------------------|-------------------------------------------------|
 | `method`          | HTTP method                                     |
 | `url`             | URL endpoint                                    |
+| `request_body`    | (optional) HTTP request body                    |
 | `response_status` | HTTP status code of the response                |
+| `response_body`   | (optional) HTTP response body                   |
 | `time`            | duration of the request (in seconds)            |
 | `cache`           | if the response has been fetched from the cache |
 | `error`           | error message if anything occured               |
+
+## Request/Response body logging
+
+You can enable logging of the request and response body setting dedicated constants to `true`:
+
+ - `LOG_REQUEST_BODY`: logs the request body (works with plain strings only)
+ - `LOG_RESPONSE_BODY`: logs the response body
+ - `LOG_ERROR_RESPONSE_BODY`: logs the response body only if the response status is >=300
 
 # Cache
 
