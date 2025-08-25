@@ -11,10 +11,13 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
+/**
+ * @phpstan-import-type ApiClientOptions from ApiClientInterface
+ */
 class OptionsParserTest extends TestCase
 {
     /**
-     * @param mixed[] $options
+     * @param ApiClientOptions $options
      */
     #[DataProvider('provideGetRequestIdCases')]
     public function testGetRequestId(?ResponseInterface $response, array $options, ?string $expected): void
@@ -48,7 +51,7 @@ class OptionsParserTest extends TestCase
     }
 
     /**
-     * @param mixed[] $options
+     * @param ApiClientOptions $options
      */
     #[DataProvider('provideHasCacheOptionsCases')]
     public function testHasCacheOptions(array $options, bool $expected): void

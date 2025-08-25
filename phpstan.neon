@@ -6,9 +6,10 @@ parameters:
     bootstrapFiles:
         - vendor/bin/.phpunit/phpunit-12.3-0/vendor/autoload.php
     ignoreErrors:
-        # @see https://github.com/phpstan/phpstan/issues/13410
+        # Allow overridden documentation for HttpClient options
         -
-            identifiers:
-                - offsetAccess.nonOffsetAccessible
-                - booleanNot.exprNotBoolean
-            path: src/Log/RequestLogger.php
+            message:
+                """
+                #^Parameter \\#3 \\$options .+ of method AymDev\\\\ApiClientBundle\\\\Client\\\\ApiClient\\:\\:request\\(\\) should be contravariant with parameter \\$options \\(array\\) of method Symfony\\\\Contracts\\\\HttpClient\\\\HttpClientInterface\\:\\:request\\(\\)$#
+                """
+            path: src/Client/ApiClient.php
