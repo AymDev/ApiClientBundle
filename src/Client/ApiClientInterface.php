@@ -17,7 +17,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *     "aymdev.log_error_response_body"?: bool
  * }
  *
- * @phpstan-type ApiClientOptions mixed[]|array{
+ * @phpstan-type ApiClientOptions mixed[]&array{
+ *     body?: mixed,
+ *     json?: mixed[],
  *     user_data?: UserDataOptions
  * }
  */
