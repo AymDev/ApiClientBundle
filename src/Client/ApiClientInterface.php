@@ -14,7 +14,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *     "aymdev.cache_error_ttl"?: int,
  *     "aymdev.log_request_body"?: bool,
  *     "aymdev.log_response_body"?: bool,
- *     "aymdev.log_error_response_body"?: bool
+ *     "aymdev.log_error_response_body"?: bool,
+ *     "aymdev.validate_json"?: bool,
+ *     "aymdev.validate_custom"?: callable(mixed $data): (null|string)
  * }
  *
  * @phpstan-type ApiClientOptions mixed[]&array{
@@ -66,4 +68,22 @@ interface ApiClientInterface extends HttpClientInterface
      * Must be set to `true`.
      */
     public const string LOG_ERROR_RESPONSE_BODY = 'aymdev.log_error_response_body';
+
+    /**
+     * Request option used to ensure the response body is in JSON format.
+     * Must be set to `true`.
+     *
+     * This option will disable caching on error.
+     */
+    public const string VALIDATE_JSON = 'aymdev.validate_json';
+
+    /**
+     * Request option used to validate the response JSON body.
+     * Must be a function with the following signature where `$data` is the decoded JSON body and the optionally
+     * returned string will be used as the exception message:
+     * `callable(mixed[] $data): (null|string)`
+     *
+     * This option implies the `VALIDATE_JSON` option.
+     */
+    public const string VALIDATE_CALLBACK = 'aymdev.validate_custom';
 }

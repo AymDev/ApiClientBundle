@@ -22,6 +22,11 @@ class AsyncContext implements ContextInterface
         return $this->asyncContext->getResponse();
     }
 
+    public function getStatusCode(): int
+    {
+        return $this->asyncContext->getStatusCode();
+    }
+
     public function getResponseBody(): ?string
     {
         $stream = $this->asyncContext->getContent();

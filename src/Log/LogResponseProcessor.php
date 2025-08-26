@@ -36,7 +36,7 @@ class LogResponseProcessor implements ResponseProcessorInterface
     public function process(ContextInterface $context): void
     {
         $requestId = $this->optionsParser->getRequestId($context->getResponse());
-        if (null === $this->requestLogger || null === $requestId) {
+        if (null === $requestId) {
             return;
         }
 

@@ -40,6 +40,13 @@ class OptionsParser
             || is_int($userData[ApiClientInterface::CACHE_ERROR_DURATION] ?? null);
     }
 
+    public function needsValidation(ResponseInterface $response): bool
+    {
+        $userData = $this->getUserData($response);
+        return true === ($userData[ApiClientInterface::VALIDATE_JSON] ?? false)
+            || is_callable($userData[ApiClientInterface::VALIDATE_CALLBACK] ?? null);
+    }
+
     /**
      * @param null|ResponseInterface|ApiClientOptions $responseOrOptions
      * @return UserDataOptions

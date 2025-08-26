@@ -28,7 +28,7 @@ class ApiClient implements ApiClientInterface
         HttpClientInterface $httpClient,
     ) {
         $this->httpClient = new TraceableHttpClient($httpClient);
-        $this->passthru?->setTracedRequestsGetterCallback($this->httpClient->getTracedRequests(...));
+        $this->passthru->setTracedRequestsGetterCallback($this->httpClient->getTracedRequests(...));
     }
 
     /**

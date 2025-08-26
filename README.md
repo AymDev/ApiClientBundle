@@ -9,6 +9,16 @@ A **PHP 8.3+** & **Symfony 5 / 6 / 7** bundle extending the **Symfony HttpClient
 
 >This bundle is a *work in progress* and should get a stable release soon.
 
+<!-- TOC -->
+* [Why this bundle](#why-this-bundle)
+* [Usage](#usage)
+* [Request ID](#request-id)
+* [Logging](#logging)
+    * [Request/Response body logging](#requestresponse-body-logging)
+* [Cache](#cache)
+* [Response validation](#response-validation)
+<!-- TOC -->
+
 # Why this bundle
 
 The **Symfony HttpClient** component is a very powerful component but you can write the same code over and over if you
@@ -147,3 +157,35 @@ $apiClient->request('GET', 'https://example.com', [
     ]
 ]);
 ```
+
+# Response validation
+
+You can trigger some response validation to throw a `\UnexpectedValueException` before any processing (e.g. caching).
+
+If the response must be in **JSON** format (but for some reason the API may give an **HTML** response with a 200 status
+code on error):
+```php
+use AymDev\ApiClientBundle\Client\ApiClientInterface;
+
+$apiClient->request('GET', 'https://example.com', [
+    'user_data' => [
+        ApiClientInterface::VALIDATE_JSON => true,
+    ]
+]);
+```
+
+If you need to make further validation, you can provide a callback like:
+```php
+use AymDev\ApiClientBundle\Client\ApiClientInterface;
+
+$apiClient->request('GET', 'https://example.com', [
+    'user_data' => [
+        ApiClientInterface::VALIDATE_CALLBACK => function (mixed $data) {
+            if (!isset($data['some']['key']) {
+                return 'your detailed exception message about invalid data';
+            }
+        },
+    ]
+]);
+```
+>**Note**: the `VALIDATE_CALLBACK` constant automatically implies `VALIDATE_JSON`.
