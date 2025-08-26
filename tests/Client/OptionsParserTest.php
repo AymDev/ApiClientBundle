@@ -138,4 +138,64 @@ class OptionsParserTest extends TestCase
             false,
         ];
     }
+
+    /**
+     * @param ApiClientOptions $options
+     */
+    #[DataProvider('provideNeedsValidationCases')]
+    public function testNeedsValidation(array $options, bool $expected): void
+    {
+        $optionsParser = new OptionsParser();
+        $response = new MockResponse(info: $options);
+        self::assertSame($expected, $optionsParser->needsValidation($response));
+    }
+
+    public static function provideNeedsValidationCases(): \Generator
+    {
+        // No option
+        yield [
+            [],
+            false,
+        ];
+
+        // JSON validation
+        yield [
+            [
+                'user_data' => [
+                    ApiClientInterface::VALIDATE_JSON => true,
+                ],
+            ],
+            true,
+        ];
+
+        // JSON validation is false
+        yield [
+            [
+                'user_data' => [
+                    ApiClientInterface::VALIDATE_JSON => false,
+                ],
+            ],
+            false,
+        ];
+
+        // callback validation
+        yield [
+            [
+                'user_data' => [
+                    ApiClientInterface::VALIDATE_CALLBACK => fn (mixed $data) => null,
+                ],
+            ],
+            true,
+        ];
+
+        // invalid callback validation
+        yield [
+            [
+                'user_data' => [
+                    ApiClientInterface::VALIDATE_CALLBACK => true,
+                ],
+            ],
+            false,
+        ];
+    }
 }
