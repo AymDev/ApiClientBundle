@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Tests\AymDev\ApiClientBundle\DependencyInjection\Compiler;
 
 use AymDev\ApiClientBundle\AymdevApiClientBundle;
+use AymDev\ApiClientBundle\Cache\CacheManager;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
+use AymDev\ApiClientBundle\Log\LogResponseProcessor;
+use AymDev\ApiClientBundle\Log\RequestLogger;
+use AymDev\ApiClientBundle\Passthru\Passthru;
+use AymDev\ApiClientBundle\Validation\ValidationResponseProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -28,9 +33,19 @@ class ApiClientPassTest extends TestCase
     {
         $kernel = new AymDevApiClientTestKernel();
         $kernel->boot();
-        $container = $kernel->getContainer();
 
-        self::assertTrue($container->has(ApiClientInterface::class));
+        /** @var ContainerInterface $container */
+        $container = $kernel->getContainer()->get('test.service_container');
+
+        self::assertInstanceOf(ApiClientInterface::class, $container->get(ApiClientInterface::class));
+        self::assertInstanceOf(Passthru::class, $container->get('aymdev_api_client.passthru'));
+        self::assertInstanceOf(
+            ValidationResponseProcessor::class,
+            $container->get('aymdev_api_client.passthru.processor.validation')
+        );
+
+        self::assertFalse($container->has('aymdev_api_client.passthru.processor.log'));
+        self::assertFalse($container->has('aymdev_api_client.cache.cache_manager'));
     }
 
     public function testLogServicesDefinition(): void
@@ -43,8 +58,11 @@ class ApiClientPassTest extends TestCase
         /** @var ContainerInterface $container */
         $container = $kernel->getContainer()->get('test.service_container');
 
-        self::assertTrue($container->has('aymdev_api_client.passthru'));
-        self::assertTrue($container->has('aymdev_api_client.passthru.processor.request_logger'));
+        self::assertInstanceOf(RequestLogger::class, $container->get('aymdev_api_client.request_logger'));
+        self::assertInstanceOf(
+            LogResponseProcessor::class,
+            $container->get('aymdev_api_client.passthru.processor.log')
+        );
     }
 
     public function testCacheServicesDefinition(): void
@@ -57,7 +75,7 @@ class ApiClientPassTest extends TestCase
         /** @var ContainerInterface $container */
         $container = $kernel->getContainer()->get('test.service_container');
 
-        self::assertTrue($container->has('aymdev_api_client.cache.cache_manager'));
+        self::assertInstanceOf(CacheManager::class, $container->get('aymdev_api_client.cache.cache_manager'));
     }
 }
 

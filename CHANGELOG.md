@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - request logging
  - response caching
  - optional body logging for request, response and error response
+ - response validation
 
 [Unreleased]: https://github.com/AymDev/ApiClientBundle/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/AymDev/ApiClientBundle/releases/tag/v1.0.0

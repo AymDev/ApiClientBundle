@@ -15,6 +15,8 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 final class AymdevApiClientExtension extends Extension
 {
     public const string CONTAINER_PREFIX = 'aymdev_api_client';
+    public const string ID_LOGGER = self::CONTAINER_PREFIX . '.logger';
+    public const string ID_CACHE = self::CONTAINER_PREFIX . '.cache';
     public const string ID_CLIENT_OPTIONS_PARSER = self::CONTAINER_PREFIX . '.client.options_parser';
 
     public function load(array $configs, ContainerBuilder $container): void
@@ -24,10 +26,10 @@ final class AymdevApiClientExtension extends Extension
 
         // Dependencies managed in compiler pass
         $logger = is_string($config['logger']) ? $config['logger'] : null;
-        $container->setParameter(self::CONTAINER_PREFIX . '.logger', $logger);
+        $container->setParameter(self::ID_LOGGER, $logger);
 
         $cache = is_string($config['cache']) ? $config['cache'] : null;
-        $container->setParameter(self::CONTAINER_PREFIX . '.cache', $cache);
+        $container->setParameter(self::ID_CACHE, $cache);
 
         // Default helper services
         $container->setDefinition(self::ID_CLIENT_OPTIONS_PARSER, new Definition(OptionsParser::class));

@@ -59,6 +59,7 @@ class AsyncContextTest extends TestCase
         $infosResult = $decorator->getInfo();
         self::assertIsArray($infosResult);
         self::assertArrayHasKey('user_data', $infosResult);
+        self::assertIsArray($infosResult['user_data']);
         self::assertArrayHasKey('key', $infosResult['user_data']);
         self::assertSame('value', $infosResult['user_data']['key']);
     }
