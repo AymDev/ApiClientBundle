@@ -44,11 +44,11 @@ class OptionsParser
      * @param null|ResponseInterface|ApiClientOptions $responseOrOptions
      * @return UserDataOptions
      */
-    private function getUserData(null|ResponseInterface|array $responseOrOptions): array
+    public function getUserData(null|ResponseInterface|array $responseOrOptions): array
     {
         /** @var UserDataOptions $userData */
         $userData = $responseOrOptions instanceof ResponseInterface
-            ? $responseOrOptions->getInfo('user_data')
+            ? ($responseOrOptions->getInfo('user_data') ?? [])
             : ($responseOrOptions['user_data'] ?? []);
         return $userData;
     }

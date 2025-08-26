@@ -43,8 +43,8 @@ class ApiClientPassTest extends TestCase
         /** @var ContainerInterface $container */
         $container = $kernel->getContainer()->get('test.service_container');
 
-        self::assertTrue($container->has('aymdev_api_client.log.passthru'));
-        self::assertTrue($container->has('aymdev_api_client.log.request_logger'));
+        self::assertTrue($container->has('aymdev_api_client.passthru'));
+        self::assertTrue($container->has('aymdev_api_client.passthru.processor.request_logger'));
     }
 
     public function testCacheServicesDefinition(): void

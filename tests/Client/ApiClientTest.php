@@ -9,7 +9,8 @@ use AymDev\ApiClientBundle\Cache\CacheManager;
 use AymDev\ApiClientBundle\Client\ApiClient;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use AymDev\ApiClientBundle\Client\OptionsParser;
-use AymDev\ApiClientBundle\Log\Passthru;
+use AymDev\ApiClientBundle\Passthru\Passthru;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\AsyncContext;
@@ -19,12 +20,22 @@ use Symfony\Contracts\HttpClient\ChunkInterface;
 
 class ApiClientTest extends TestCase
 {
-    public function testRequestWithoutLog(): void
+    private function getPassthruMock(): MockObject&Passthru
     {
         $passthru = self::createMock(Passthru::class);
+        $passthru->expects(self::any())
+            ->method('passthru')
+            ->willReturnCallback(function (ChunkInterface $chunk, AsyncContext $context): \Generator {
+                yield $chunk;
+            });
+        return $passthru;
+    }
+
+    public function testRequestWithoutId(): void
+    {
+        $passthru = $this->getPassthruMock();
         $passthru->expects(self::once())->method('setTracedRequestsGetterCallback');
         $passthru->expects(self::never())->method('registerRequest');
-        $passthru->expects(self::never())->method('passthru');
 
         $client = new ApiClient(
             new OptionsParser(),
@@ -37,18 +48,13 @@ class ApiClientTest extends TestCase
         $client->request('GET', 'https://example.com');
     }
 
-    public function testRequestWithLog(): void
+    public function testRequestWithId(): void
     {
         $requestId = 'requestId';
 
-        $passthru = self::createMock(Passthru::class);
+        $passthru = $this->getPassthruMock();
         $passthru->expects(self::once())->method('setTracedRequestsGetterCallback');
         $passthru->expects(self::once())->method('registerRequest')->with($requestId);
-        $passthru->expects(self::atLeastOnce())
-            ->method('passthru')
-            ->willReturnCallback(function (ChunkInterface $chunk, AsyncContext $context): \Generator {
-                yield $chunk;
-            });
 
         $client = new ApiClient(
             new OptionsParser(),
@@ -72,7 +78,7 @@ class ApiClientTest extends TestCase
 
         $client = new ApiClient(
             new OptionsParser(),
-            null,
+            $this->getPassthruMock(),
             $cacheManager,
             new MockHttpClient(),
         );
@@ -91,7 +97,7 @@ class ApiClientTest extends TestCase
 
         $client = new ApiClient(
             new OptionsParser(),
-            null,
+            $this->getPassthruMock(),
             $cacheManager,
             new MockHttpClient(),
         );
@@ -110,7 +116,7 @@ class ApiClientTest extends TestCase
 
         $client = new ApiClient(
             new OptionsParser(),
-            null,
+            $this->getPassthruMock(),
             $cacheManager,
             new MockHttpClient(),
         );

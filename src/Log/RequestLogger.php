@@ -6,8 +6,8 @@ namespace AymDev\ApiClientBundle\Log;
 
 use AymDev\ApiClientBundle\Cache\CachedResponse;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
+use AymDev\ApiClientBundle\Passthru\ContextInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\Response\AsyncContext;
 
 /**
  * @internal
@@ -26,7 +26,7 @@ class RequestLogger
      */
     public function logRequest(
         float $duration,
-        CachedResponse|AsyncContext $responseOrContext,
+        CachedResponse|ContextInterface $responseOrContext,
         array $options,
     ): void {
         $message = sprintf(
@@ -35,7 +35,7 @@ class RequestLogger
         );
 
         $status = $responseOrContext->getInfo('http_code');
-        $responseOrContext = [
+        $context = [
             'method' => $responseOrContext->getInfo('http_method'),
             'url' => $responseOrContext->getInfo('url'),
             'request_body' => $this->getRequestBody($options),
@@ -47,9 +47,9 @@ class RequestLogger
         ];
 
         if (is_scalar($status) && intval($status) >= 400) {
-            $this->logger->error($message, $responseOrContext);
+            $this->logger->error($message, $context);
         } else {
-            $this->logger->info($message, $responseOrContext);
+            $this->logger->info($message, $context);
         }
     }
 
@@ -78,7 +78,7 @@ class RequestLogger
      * @param ApiClientOptions $options
      * @throws \JsonException
      */
-    private function getResponseBody(CachedResponse|AsyncContext $responseOrContext, array $options): ?string
+    private function getResponseBody(CachedResponse|ContextInterface $responseOrContext, array $options): ?string
     {
         $logResponse = $options['user_data'][ApiClientInterface::LOG_RESPONSE_BODY] ?? false;
         $logErrorResponse = $options['user_data'][ApiClientInterface::LOG_ERROR_RESPONSE_BODY] ?? false;
@@ -86,11 +86,8 @@ class RequestLogger
             return null;
         }
 
-        if ($responseOrContext instanceof AsyncContext) {
-            if (null === $stream = $responseOrContext->getContent()) {
-                return null;
-            }
-            return stream_get_contents($stream, offset: 0);
+        if ($responseOrContext instanceof ContextInterface) {
+            return $responseOrContext->getResponseBody();
         }
 
         if ([] !== $jsonData = $responseOrContext->toArray(false)) {

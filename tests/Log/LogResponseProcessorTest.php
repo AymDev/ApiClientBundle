@@ -6,26 +6,16 @@ namespace Tests\AymDev\ApiClientBundle\Log;
 
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use AymDev\ApiClientBundle\Client\OptionsParser;
-use AymDev\ApiClientBundle\Log\Passthru;
+use AymDev\ApiClientBundle\Log\LogResponseProcessor;
 use AymDev\ApiClientBundle\Log\RequestLogger;
+use AymDev\ApiClientBundle\Passthru\ContextInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Response\AsyncContext;
-use Symfony\Component\HttpClient\Response\MockResponse;
-use Symfony\Contracts\HttpClient\ChunkInterface;
 
-class PassthruTest extends TestCase
+class LogResponseProcessorTest extends TestCase
 {
-    public function testPassthru(): void
+    public function testProcess(): void
     {
-        // HttpClient mocks
-        $chunk = self::createMock(ChunkInterface::class);
-        $chunk->expects(self::once())->method('isLast')->willReturn(true);
-
-        $passthru = null;
-        $response = new MockResponse();
-        $infos = [];
-        $context = new AsyncContext($passthru, new MockHttpClient(), $response, $infos, null, 0);
+        $context = self::createMock(ContextInterface::class);
 
         // Ensure request ID is parsed
         $requestId = 'requestId';
@@ -42,8 +32,8 @@ class PassthruTest extends TestCase
             );
 
         // Set up traced requests
-        $passthru = new Passthru($optionsParser, $requestLogger);
-        $passthru->setTracedRequestsGetterCallback(fn () => [
+        $processor = new LogResponseProcessor($optionsParser, $requestLogger);
+        $processor->setTracedRequestsGetterCallback(fn () => [
             [
                 'options' => [
                     'user_data' => [
@@ -54,21 +44,14 @@ class PassthruTest extends TestCase
         ]);
 
         // DO register request before execution
-        $passthru->registerRequest($requestId);
+        $processor->registerRequest($requestId);
 
-        iterator_to_array($passthru->passthru($chunk, $context));
+        $processor->process($context);
     }
 
     public function testDoNothingWhenRequestIsNotRegistered(): void
     {
-        // HttpClient mocks
-        $chunk = self::createMock(ChunkInterface::class);
-        $chunk->expects(self::once())->method('isLast')->willReturn(true);
-
-        $passthru = null;
-        $response = new MockResponse();
-        $infos = [];
-        $context = new AsyncContext($passthru, new MockHttpClient(), $response, $infos, null, 0);
+        $context = self::createMock(ContextInterface::class);
 
         // Ensure request ID is parsed
         $requestId = 'requestId';
@@ -80,8 +63,8 @@ class PassthruTest extends TestCase
         $requestLogger->expects(self::never())->method('logRequest');
 
         // Set up traced requests
-        $passthru = new Passthru($optionsParser, $requestLogger);
-        $passthru->setTracedRequestsGetterCallback(fn () => [
+        $processor = new LogResponseProcessor($optionsParser, $requestLogger);
+        $processor->setTracedRequestsGetterCallback(fn () => [
             [
                 'options' => [
                     'user_data' => [
@@ -93,6 +76,6 @@ class PassthruTest extends TestCase
 
         // DO NOT register request before execution (no request ID)
 
-        iterator_to_array($passthru->passthru($chunk, $context));
+        $processor->process($context);
     }
 }

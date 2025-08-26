@@ -7,11 +7,10 @@ namespace Tests\AymDev\ApiClientBundle\Log;
 use AymDev\ApiClientBundle\Cache\CachedResponse;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
 use AymDev\ApiClientBundle\Log\RequestLogger;
+use AymDev\ApiClientBundle\Passthru\ContextInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Response\AsyncContext;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
 class RequestLoggerTest extends TestCase
@@ -53,15 +52,16 @@ class RequestLoggerTest extends TestCase
                 ]
             );
 
-        $passthru = null;
         $response = new MockResponse($responseBody, [
             'http_method' => $method,
             'url' => $url,
             'http_code' => $status,
             'error' => $error,
         ]);
-        $infos = [];
-        $context = new AsyncContext($passthru, new MockHttpClient(), $response, $infos, null, 0);
+        $context = self::createMock(ContextInterface::class);
+        $context->expects(self::atLeastOnce())
+            ->method('getInfo')
+            ->willReturnCallback(fn (string $key) => $response->getInfo($key));
 
         $requestLogger = new RequestLogger($logger);
         $requestLogger->logRequest($duration, $context, $request);
@@ -194,13 +194,6 @@ class RequestLoggerTest extends TestCase
             ],
         ];
 
-        // Define context resource used by context
-        $resource = fopen('php://temp', 'w+');
-        if (false === $resource) {
-            throw new \RuntimeException('Unable to open temp file');
-        }
-        fwrite($resource, $responseBody);
-
         $logger = self::createMock(LoggerInterface::class);
         $logger->expects(self::once())
             ->method('info')
@@ -209,15 +202,11 @@ class RequestLoggerTest extends TestCase
                 self::callback(fn(array $context) => $context['response_body'] === $responseBody)
             );
 
-        $passthru = null;
-        $response = new MockResponse($responseBody);
-        $infos = [];
-        $context = new AsyncContext($passthru, new MockHttpClient(), $response, $infos, $resource, 0);
+        $context = self::createMock(ContextInterface::class);
+        $context->expects(self::once())->method('getResponseBody')->willReturn($responseBody);
 
         $requestLogger = new RequestLogger($logger);
         $requestLogger->logRequest(1, $context, $request);
-
-        fclose($resource);
     }
 
     #[DataProvider('provideLogErrorResponseBodyCases')]
