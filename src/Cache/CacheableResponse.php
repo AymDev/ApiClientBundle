@@ -14,6 +14,7 @@ class CacheableResponse extends AbstractCacheResponse
     public function __construct(
         private readonly CacheItemPoolInterface $cache,
         public ResponseInterface $response,
+        public readonly string $requestId,
         private readonly string $cacheKey,
         private readonly ?int $cacheTtl,
         private readonly ?\DateTimeInterface $cacheExpiry,

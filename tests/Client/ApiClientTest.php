@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\AymDev\ApiClientBundle\Client;
 
+use AymDev\ApiClientBundle\Cache\CacheableResponse;
 use AymDev\ApiClientBundle\Cache\CachedResponse;
+use AymDev\ApiClientBundle\Cache\CachedResponseChunk;
 use AymDev\ApiClientBundle\Cache\CacheManager;
 use AymDev\ApiClientBundle\Client\ApiClient;
 use AymDev\ApiClientBundle\Client\ApiClientInterface;
@@ -12,6 +14,7 @@ use AymDev\ApiClientBundle\Client\OptionsParser;
 use AymDev\ApiClientBundle\Passthru\Passthru;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\AsyncContext;
 use Symfony\Component\HttpClient\Response\AsyncResponse;
@@ -123,5 +126,60 @@ class ApiClientTest extends TestCase
 
         $response = $client->request('GET', 'https://example.com');
         self::assertSame($cacheableResponse, $response);
+    }
+
+    public function testStreamWithCache(): void
+    {
+        $httpClient = new MockHttpClient();
+        $firstRequestId = 'api-1';
+        $secondRequestId = 'api-2';
+
+        $client = new ApiClient(
+            new OptionsParser(),
+            $this->getPassthruMock(),
+            new CacheManager(new OptionsParser(), new ArrayAdapter(), null),
+            $httpClient,
+        );
+
+        $firstResponse = $client->request('GET', 'https://example.com', [
+            'user_data' => [
+                ApiClientInterface::REQUEST_ID => $firstRequestId,
+                ApiClientInterface::CACHE_EXPIRATION => new \DateTime('tomorrow'),
+            ]
+        ]);
+        $secondResponse = $client->request('GET', 'https://example.com', [
+            'user_data' => [
+                ApiClientInterface::REQUEST_ID => $secondRequestId,
+                ApiClientInterface::CACHE_EXPIRATION => new \DateTime('tomorrow'),
+            ]
+        ]);
+
+        foreach ($client->stream([$firstResponse, $secondResponse]) as $response => $chunk) {
+            self::assertInstanceOf(CacheableResponse::class, $response);
+            if ($chunk->isLast()) {
+                // Trigger caching
+                $response->getContent();
+            }
+        }
+
+        $firstCachedResponse = $client->request('GET', 'https://example.com', [
+            'user_data' => [
+                ApiClientInterface::REQUEST_ID => $firstRequestId,
+                ApiClientInterface::CACHE_EXPIRATION => new \DateTime('tomorrow'),
+            ]
+        ]);
+        $secondCachedResponse = $client->request('GET', 'https://example.com', [
+            'user_data' => [
+                ApiClientInterface::REQUEST_ID => $secondRequestId,
+                ApiClientInterface::CACHE_EXPIRATION => new \DateTime('tomorrow'),
+            ]
+        ]);
+
+        foreach ($client->stream([$firstCachedResponse, $secondCachedResponse]) as $response => $chunk) {
+            self::assertInstanceOf(CachedResponse::class, $response);
+            self::assertInstanceOf(CachedResponseChunk::class, $chunk);
+        }
+        // Only 2 real requests should have been sent
+        self::assertSame(2, $httpClient->getRequestsCount());
     }
 }
