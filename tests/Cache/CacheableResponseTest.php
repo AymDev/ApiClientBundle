@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\NullAdapter;
-use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class CacheableResponseTest extends TestCase
@@ -25,6 +24,7 @@ class CacheableResponseTest extends TestCase
         $response = new CacheableResponse(
             new NullAdapter(),
             $internalResponse,
+            'requestId',
             'cache_key',
             null,
             null,
@@ -43,6 +43,7 @@ class CacheableResponseTest extends TestCase
         $response = new CacheableResponse(
             new NullAdapter(),
             $internalResponse,
+            'requestId',
             'cache_key',
             null,
             null,
@@ -73,6 +74,7 @@ class CacheableResponseTest extends TestCase
         $response = new CacheableResponse(
             $cache,
             $internalResponse,
+            'requestId',
             'cache_key',
             $cacheTtl,
             null,
@@ -106,6 +108,7 @@ class CacheableResponseTest extends TestCase
         $response = new CacheableResponse(
             $cache,
             $internalResponse,
+            'requestId',
             'cache_key',
             null,
             $expiry,
@@ -139,6 +142,7 @@ class CacheableResponseTest extends TestCase
         $response = new CacheableResponse(
             $cache,
             $internalResponse,
+            'requestId',
             'cache_key',
             $cacheErrorTtl * 2,
             null,
@@ -158,6 +162,7 @@ class CacheableResponseTest extends TestCase
         $response = new CacheableResponse(
             new NullAdapter(),
             $internalResponse,
+            'requestId',
             'cache_key',
             null,
             null,

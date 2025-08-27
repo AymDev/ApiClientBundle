@@ -61,10 +61,16 @@ class CacheManager
 
         /** @var mixed[]&UserDataOptions $userData */
         $userData = $response->getInfo('user_data');
+        $requestId = $this->optionsParser->getRequestId($response);
+        if (null === $requestId) {
+            throw new \UnexpectedValueException('Missing request ID to cache response');
+        }
+
         return new CacheableResponse(
             $this->cache,
             $response,
-            $this->createCacheKey($this->optionsParser->getRequestId($response)),
+            $requestId,
+            $this->createCacheKey($requestId),
             $userData[ApiClientInterface::CACHE_DURATION] ?? null,
             $userData[ApiClientInterface::CACHE_EXPIRATION] ?? null,
             $userData[ApiClientInterface::CACHE_ERROR_DURATION] ?? null,
